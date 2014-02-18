@@ -27,6 +27,7 @@ public:
 private:
   // insert private members here
   TH1* hist_mll;
+  double mll_tree;
 
   ClassDef( ToyAnalysis, 0 )  
 };

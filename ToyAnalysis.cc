@@ -38,7 +38,7 @@ ToyAnalysis::ToyAnalysis( Sample& sample, EventManager& manager ) :
 
   _hlt = false; // apply HLT selection
   _nDebug = 0;
-  hist_mll = new TH1F("m_ll", "m_ll title", 100, 0, 200);
+  hist_mll = new TH1F("m_ll", "m_ll", 100, 0, 200);
 }
 
 ToyAnalysis::~ToyAnalysis()
@@ -55,7 +55,8 @@ ToyAnalysis::bookHistograms()
 //  defineTemplate( "balance", 200, 0, 20    );
 //  defineTemplate( "jmult", 20, -0.5, 19.5 );
 //  defineTemplate( "LP", 100, -2., 2. );
-  defineTemplate("di-electron mass", 100, 0, 100);
+  defineTemplate("m_ll", 100, 0, 200);
+  tm.setTree("testNTuple", "");
   
 }
 
@@ -74,6 +75,7 @@ ToyAnalysis::writeHistograms()
 //    }  
 //
   hist_mll->Write();
+  tm.flush();
 }
 
 bool
@@ -96,12 +98,19 @@ ToyAnalysis::analyzeEvent()
 	  ZCand = Candidate::create(Electrons[0], Electrons[1]);
 	  cout << "ZCand->mass(): " << ZCand->mass() << endl;
 	  m_ll = ZCand->mass();
+	  mll_tree = m_ll;
+	  tm.add<double>("m_ll", &mll_tree);
+	  fill("m_ll", "ee", m_ll, "");
+
   }
   else if ( nMuons >= 2 ) {
 	  // create Z candidate with 2 muons
 	  ZCand = Candidate::create(Muons[0], Muons[1]);
 	  cout << "ZCand->mass(): " << ZCand->mass() << endl;
 	  m_ll = ZCand->mass();
+	  mll_tree = m_ll;
+	  tm.add<double>("m_ll", &mll_tree);
+	  fill("m_ll", "mumu", m_ll, "");
   }
   else {
 	  cout << "no Z candidate in this event" << endl;
