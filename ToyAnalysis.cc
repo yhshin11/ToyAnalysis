@@ -95,36 +95,32 @@ ToyAnalysis::analyzeEvent()
 
   Candidate* ZCand;
   // Z candidate variables to store.
-  bool valid = false;
+  bool boolValidZ = false;
   double m_ll, pt_ll, phi_ll, y_ll;
   if ( nElectrons >= 2 ) {
 	  // create Z candidate with 2 electrons
 	  ZCand = Candidate::create(Electrons[0], Electrons[1]);
 	  // XXX fill("m_ll", "ee", m_ll, "");
-	  valid = true;
+	  boolValidZ = true;
 
   }
   else if ( nMuons >= 2 ) {
 	  // create Z candidate with 2 muons
 	  ZCand = Candidate::create(Muons[0], Muons[1]);
 	  // XXX fill("m_ll", "mumu", m_ll, "");
-	  valid = true;
+	  boolValidZ = true;
   }
   else {
 	  cout << "no Z candidate in this event" << endl;
-	  valid = false;
-	  m_ll = 10000;
-	  pt_ll = 10000;
-	  phi_ll = 10000;
-	  return false;
+	  boolValidZ = false;
   }
   m_ll = ZCand->mass();
   pt_ll = ZCand->pt();
   phi_ll = ZCand->phi();
-  if (valid) {
-	//y_ll = getRapidity(ZCand);
+  if (boolValidZ) {
+	y_ll = getRapidity(ZCand);
   }
-  tm.add<bool>("valid", &valid);
+  tm.add<bool>("boolValidZ", &boolValidZ);
   tm.add<double>("m_ll", &m_ll);
   tm.add<double>("pt_ll", &pt_ll);
   tm.add<double>("phi_ll", &phi_ll);
@@ -169,7 +165,8 @@ ToyAnalysis::analyzeEvent()
   return true;
 }
 
-double getRapidity(const Candidate* zCandidate)
+double 
+ToyAnalysis::getRapidity(const Candidate* zCandidate)
 {
 	if (zCandidate) {
 		double pz = zCandidate->pz();
