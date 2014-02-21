@@ -118,6 +118,32 @@ ToyAnalysis::analyzeEvent()
 	  return false;
   }
   hist_mll->Fill(m_ll);
+
+  // Retrieve jets.
+  const CandList& Jets = _e.jetList( EventManager::kPfJet);
+  Candidate* jet0;
+  if ( Jets.size()!=0 ) {
+	 jet0 = Jets[0];
+  }
+  double jet0_pt;
+  if (jet0) {
+	jet0_pt = jet0->pt();
+	if( jet0_pt > 30 ) {
+		tm.add<double>("jet0_pt", &jet0_pt);
+	}
+  }
+  //for(int unsigned ij=0;ij<Jets.size();ij++) { 
+  //  Candidate* jet = Jets[ij];
+  //  if((fabs(jet->eta())<1.4442 ||
+  //  (fabs(jet->eta())<2.5 && fabs(jet->eta())>1.56 ) ) )
+  //    {
+  //  if(pttmp<jet->pt())
+  //    { theJet_=jet; pttmp = jet->pt(); }
+  //    }
+  //}
+
+  // Retrieve met candidates.
+  //Candidate* met_  = _e.met( EventManager::kPfMet);
  
 
   // stat histograms
