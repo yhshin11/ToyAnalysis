@@ -26,8 +26,9 @@ public:
 
 private:
   // insert private members here
-  TH1* hist_mll;
-  double mll_tree;
+  //XXX TH1* hist_mll;
+  //XXX double mll_tree;
+  double getRapidity(const Candidate* zCandidate);
 
   ClassDef( ToyAnalysis, 0 )  
 };

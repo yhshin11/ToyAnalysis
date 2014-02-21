@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <sstream>
 #include <fstream>
+#include <math.h>
 using namespace std;
 
 #include <TH1I.h>
@@ -38,7 +39,7 @@ ToyAnalysis::ToyAnalysis( Sample& sample, EventManager& manager ) :
 
   _hlt = false; // apply HLT selection
   _nDebug = 0;
-  hist_mll = new TH1F("m_ll", "m_ll", 100, 0, 200);
+  //XXX hist_mll = new TH1F("m_ll", "m_ll", 100, 0, 200);
 }
 
 ToyAnalysis::~ToyAnalysis()
@@ -91,26 +92,43 @@ ToyAnalysis::analyzeEvent()
   int nElectrons, nMuons;
   nElectrons = Electrons.size();
   nMuons = Muons.size();
+
   Candidate* ZCand;
-  double m_ll;
+  // Z candidate variables to store.
+  bool valid = false;
+  double m_ll, pt_ll, phi_ll, y_ll;
   if ( nElectrons >= 2 ) {
 	  // create Z candidate with 2 electrons
 	  ZCand = Candidate::create(Electrons[0], Electrons[1]);
 	  // XXX fill("m_ll", "ee", m_ll, "");
+	  valid = true;
 
   }
   else if ( nMuons >= 2 ) {
 	  // create Z candidate with 2 muons
 	  ZCand = Candidate::create(Muons[0], Muons[1]);
 	  // XXX fill("m_ll", "mumu", m_ll, "");
+	  valid = true;
   }
   else {
 	  cout << "no Z candidate in this event" << endl;
-	  m_ll = -1;
+	  valid = false;
+	  m_ll = 10000;
+	  pt_ll = 10000;
+	  phi_ll = 10000;
 	  return false;
   }
   m_ll = ZCand->mass();
+  pt_ll = ZCand->pt();
+  phi_ll = ZCand->phi();
+  if (valid) {
+	//y_ll = getRapidity(ZCand);
+  }
+  tm.add<bool>("valid", &valid);
   tm.add<double>("m_ll", &m_ll);
+  tm.add<double>("pt_ll", &pt_ll);
+  tm.add<double>("phi_ll", &phi_ll);
+  tm.add<double>("y_ll", &y_ll);
   //XXX hist_mll->Fill(m_ll);
 
   // Retrieve jets.
@@ -151,3 +169,13 @@ ToyAnalysis::analyzeEvent()
   return true;
 }
 
+double getRapidity(const Candidate* zCandidate)
+{
+	if (zCandidate) {
+		double pz = zCandidate->pz();
+		double E = zCandidate->E();
+		double rapidity = 0.5*log( (E + pz)/(E - pz) );
+		return rapidity;
+	}
+	else return 0;
+}
