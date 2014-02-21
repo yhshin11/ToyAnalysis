@@ -74,7 +74,7 @@ ToyAnalysis::writeHistograms()
 //      it->second->Write();
 //    }  
 //
-  hist_mll->Write();
+  //XXX hist_mll->Write();
   tm.flush();
 }
 
@@ -88,36 +88,30 @@ ToyAnalysis::analyzeEvent()
 
   const CandList& Electrons = _e.electrons();
   const CandList& Muons = _e.muons();
-  Candidate* ZCand;
   int nElectrons, nMuons;
   nElectrons = Electrons.size();
   nMuons = Muons.size();
+  Candidate* ZCand;
   double m_ll;
   if ( nElectrons >= 2 ) {
 	  // create Z candidate with 2 electrons
 	  ZCand = Candidate::create(Electrons[0], Electrons[1]);
-	  cout << "ZCand->mass(): " << ZCand->mass() << endl;
-	  m_ll = ZCand->mass();
-	  mll_tree = m_ll;
-	  tm.add<double>("m_ll", &mll_tree);
-	  fill("m_ll", "ee", m_ll, "");
+	  // XXX fill("m_ll", "ee", m_ll, "");
 
   }
   else if ( nMuons >= 2 ) {
 	  // create Z candidate with 2 muons
 	  ZCand = Candidate::create(Muons[0], Muons[1]);
-	  cout << "ZCand->mass(): " << ZCand->mass() << endl;
-	  m_ll = ZCand->mass();
-	  mll_tree = m_ll;
-	  tm.add<double>("m_ll", &mll_tree);
-	  fill("m_ll", "mumu", m_ll, "");
+	  // XXX fill("m_ll", "mumu", m_ll, "");
   }
   else {
 	  cout << "no Z candidate in this event" << endl;
 	  m_ll = -1;
 	  return false;
   }
-  hist_mll->Fill(m_ll);
+  m_ll = ZCand->mass();
+  tm.add<double>("m_ll", &m_ll);
+  //XXX hist_mll->Fill(m_ll);
 
   // Retrieve jets.
   const CandList& Jets = _e.jetList( EventManager::kPfJet);
