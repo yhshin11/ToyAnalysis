@@ -10,6 +10,9 @@ class TH2;
 
 #include "Analysis/core/SampleAnalysis.hh"
 
+#include "Analysis/selectors/MuonSelector.hh"
+#include "Analysis/selectors/ElectronSelector.hh"
+
 class ToyAnalysis : public SampleAnalysis
 {
 public:
@@ -29,6 +32,9 @@ private:
   //XXX TH1* hist_mll;
   //XXX double mll_tree;
   double getRapidity(const Candidate* zCandidate);
+
+  MuonSelector MuonSel;
+  ElectronSelector ElectronSel;
 
   ClassDef( ToyAnalysis, 0 )  
 };

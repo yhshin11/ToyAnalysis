@@ -31,7 +31,9 @@ typedef vector<float> vectorFloat;
 
 
 ToyAnalysis::ToyAnalysis( Sample& sample, EventManager& manager ) : 
-  SampleAnalysis( "Toy", sample, manager )
+SampleAnalysis( "Toy", sample, manager ),
+MuonSel(MuonSelector::kPt20,MuonSelector::kTight),
+ElectronSel(MuonSelector::kPt20,MuonSelector::kMedium)
 {
   cout << "\t-------------------------------------------" << endl; 
   cout << "\t---  Toy preselection analysis     ----" << endl; 
@@ -92,34 +94,73 @@ ToyAnalysis::analyzeEvent()
   int nElectrons, nMuons;
   nElectrons = Electrons.size();
   nMuons = Muons.size();
+  Candidate *l1, *l2;
+  // Lepton variables to store.
+  bool boolTightIso_l1;
+  int pdgCode_l1 = 0;
+  double pt_l1, eta_l1, phi_l1, charge_l1;
+  bool boolTightIso_l2;
+  int pdgCode_l2 = 0;
+  double pt_l2, eta_l2, phi_l2, charge_l2;
+
 
   Candidate* ZCand;
   // Z candidate variables to store.
   bool boolValidZ = false;
   double m_ll, pt_ll, phi_ll, y_ll;
+
   if ( nElectrons >= 2 ) {
-	  // create Z candidate with 2 electrons
-	  ZCand = Candidate::create(Electrons[0], Electrons[1]);
+	  l1 = Electrons[0];
+	  l2 = Electrons[1];
 	  // XXX fill("m_ll", "ee", m_ll, "");
 	  boolValidZ = true;
+	  boolTightIso_l1 = ElectronSel.accept(*l1);
+	  boolTightIso_l2 = ElectronSel.accept(*l2);
 
   }
   else if ( nMuons >= 2 ) {
-	  // create Z candidate with 2 muons
-	  ZCand = Candidate::create(Muons[0], Muons[1]);
+	  l1 = Muons[0];
+	  l2 = Muons[1];
 	  // XXX fill("m_ll", "mumu", m_ll, "");
 	  boolValidZ = true;
+	  boolTightIso_l1 = MuonSel.accept(*l1);
+	  boolTightIso_l2 = MuonSel.accept(*l2);
   }
   else {
 	  cout << "no Z candidate in this event" << endl;
 	  boolValidZ = false;
   }
-  m_ll = ZCand->mass();
-  pt_ll = ZCand->pt();
-  phi_ll = ZCand->phi();
   if (boolValidZ) {
+	pdgCode_l1 = l1->pdgCode();
+	pt_l1 = l1->pt();
+	eta_l1 = l1->eta();
+	phi_l1 = l1->phi();
+	charge_l1 = l1->charge();
+	pdgCode_l2 = l2->pdgCode();
+	pt_l2 = l2->pt();
+	eta_l2 = l2->eta();
+	phi_l2 = l2->phi();
+	charge_l2 = l2->charge();
+	// Create Z candidate with 2 leptons.
+	ZCand = Candidate::create(l1, l2);
+	m_ll = ZCand->mass();
+	pt_ll = ZCand->pt();
+	phi_ll = ZCand->phi();
 	y_ll = getRapidity(ZCand);
   }
+  tm.add<bool>("boolTightIso_l1", &boolTightIso_l1);
+  tm.add<int>("pdgCode_l1", &pdgCode_l1);
+  tm.add<double>("pt_l1", &pt_l1);
+  tm.add<double>("eta_l1", &eta_l1);
+  tm.add<double>("phi_l1", &phi_l1);
+  tm.add<double>("charge_l1", &charge_l1);
+  tm.add<bool>("boolTightIso_l2", &boolTightIso_l2);
+  tm.add<int>("pdgCode_l2", &pdgCode_l2);
+  tm.add<double>("pt_l2", &pt_l2);
+  tm.add<double>("eta_l2", &eta_l2);
+  tm.add<double>("phi_l2", &phi_l2);
+  tm.add<double>("charge_l2", &charge_l2);
+
   tm.add<bool>("boolValidZ", &boolValidZ);
   tm.add<double>("m_ll", &m_ll);
   tm.add<double>("pt_ll", &pt_ll);
