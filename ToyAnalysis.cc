@@ -96,18 +96,20 @@ ToyAnalysis::analyzeEvent()
   nMuons = Muons.size();
   Candidate *l1, *l2;
   // Lepton variables to store.
-  bool boolTightIso_l1;
+  bool boolTightIso_l1 = false;
   int pdgCode_l1 = 0;
-  double pt_l1, eta_l1, phi_l1, charge_l1;
-  bool boolTightIso_l2;
+  float pt_l1, eta_l1, phi_l1, charge_l1;
+  pt_l1 = eta_l1 = phi_l1 = charge_l1 = 0;
+  bool boolTightIso_l2 = false;
   int pdgCode_l2 = 0;
-  double pt_l2, eta_l2, phi_l2, charge_l2;
+  float pt_l2, eta_l2, phi_l2, charge_l2;
+  pt_l2 = eta_l2 = phi_l2 = charge_l2 = 0;
 
 
   Candidate* ZCand;
   // Z candidate variables to store.
   bool boolValidZ = false;
-  double m_ll, pt_ll, phi_ll, y_ll;
+  float m_ll, pt_ll, phi_ll, y_ll;
 
   if ( nElectrons >= 2 ) {
 	  l1 = Electrons[0];
@@ -150,37 +152,47 @@ ToyAnalysis::analyzeEvent()
   }
   tm.add<bool>("boolTightIso_l1", &boolTightIso_l1);
   tm.add<int>("pdgCode_l1", &pdgCode_l1);
-  tm.add<double>("pt_l1", &pt_l1);
-  tm.add<double>("eta_l1", &eta_l1);
-  tm.add<double>("phi_l1", &phi_l1);
-  tm.add<double>("charge_l1", &charge_l1);
+  tm.add<float>("pt_l1", &pt_l1);
+  tm.add<float>("eta_l1", &eta_l1);
+  tm.add<float>("phi_l1", &phi_l1);
+  tm.add<float>("charge_l1", &charge_l1);
   tm.add<bool>("boolTightIso_l2", &boolTightIso_l2);
   tm.add<int>("pdgCode_l2", &pdgCode_l2);
-  tm.add<double>("pt_l2", &pt_l2);
-  tm.add<double>("eta_l2", &eta_l2);
-  tm.add<double>("phi_l2", &phi_l2);
-  tm.add<double>("charge_l2", &charge_l2);
+  tm.add<float>("pt_l2", &pt_l2);
+  tm.add<float>("eta_l2", &eta_l2);
+  tm.add<float>("phi_l2", &phi_l2);
+  tm.add<float>("charge_l2", &charge_l2);
 
   tm.add<bool>("boolValidZ", &boolValidZ);
-  tm.add<double>("m_ll", &m_ll);
-  tm.add<double>("pt_ll", &pt_ll);
-  tm.add<double>("phi_ll", &phi_ll);
-  tm.add<double>("y_ll", &y_ll);
+  tm.add<float>("m_ll", &m_ll);
+  tm.add<float>("pt_ll", &pt_ll);
+  tm.add<float>("phi_ll", &phi_ll);
+  tm.add<float>("y_ll", &y_ll);
   //XXX hist_mll->Fill(m_ll);
 
   // Retrieve jets.
-  const CandList& Jets = _e.jetList( EventManager::kPfJet);
-  Candidate* jet0;
-  if ( Jets.size()!=0 ) {
-	 jet0 = Jets[0];
+  const CandList& Jets = _e.jetList( EventManager::kPatJet);
+  // Jet variables to store.
+  vector<float> *pt_jets 	= new vector<float>;
+  vector<float> *eta_jets	= new vector<float>;
+  vector<float> *phi_jets	= new vector<float>;
+  vector<bool> *mvaIdMedium_jets = new vector<bool>;
+  for(int unsigned ij=0;ij<Jets.size();ij++) { 
+	  Candidate* jet = Jets[ij];
+	  if( jet->pt() > 30 ) {
+		  pt_jets->push_back(jet->pt());
+		  eta_jets->push_back(jet->eta());
+		  phi_jets->push_back(jet->phi());
+		  CandInfo* info = jet->info();
+		  bool mvaIdMedium = info->getBool("mvaIdMedium");
+		  mvaIdMedium_jets->push_back(mvaIdMedium);
+	  }
   }
-  double jet0_pt;
-  if (jet0) {
-	jet0_pt = jet0->pt();
-	if( jet0_pt > 30 ) {
-		tm.add<double>("jet0_pt", &jet0_pt);
-	}
-  }
+  tm.add<vector<float>*>("pt_jets", &pt_jets);
+  tm.add<vector<float>*>("eta_jets", &eta_jets);
+  tm.add<vector<float>*>("phi_jets", &phi_jets);
+  tm.add<vector<bool>*>("mvaIdMedium_jets", &mvaIdMedium_jets);
+
   //for(int unsigned ij=0;ij<Jets.size();ij++) { 
   //  Candidate* jet = Jets[ij];
   //  if((fabs(jet->eta())<1.4442 ||
@@ -206,13 +218,13 @@ ToyAnalysis::analyzeEvent()
   return true;
 }
 
-double 
+float 
 ToyAnalysis::getRapidity(const Candidate* zCandidate)
 {
 	if (zCandidate) {
-		double pz = zCandidate->pz();
-		double E = zCandidate->E();
-		double rapidity = 0.5*log( (E + pz)/(E - pz) );
+		float pz = zCandidate->pz();
+		float E = zCandidate->E();
+		float rapidity = 0.5*log( (E + pz)/(E - pz) );
 		return rapidity;
 	}
 	else return 0;

@@ -31,7 +31,7 @@ private:
   // insert private members here
   //XXX TH1* hist_mll;
   //XXX double mll_tree;
-  double getRapidity(const Candidate* zCandidate);
+  float getRapidity(const Candidate* zCandidate);
 
   MuonSelector MuonSel;
   ElectronSelector ElectronSel;
