@@ -89,6 +89,7 @@ ToyAnalysis::analyzeEvent()
   buildLeptonLists();
 
 
+  // Retrieve leptons.
   const CandList& Electrons = _e.electrons();
   const CandList& Muons = _e.muons();
   int nElectrons, nMuons;
@@ -173,10 +174,12 @@ ToyAnalysis::analyzeEvent()
   // Retrieve jets.
   const CandList& Jets = _e.jetList( EventManager::kPatJet);
   // Jet variables to store.
-  vector<float> *pt_jets 	= new vector<float>;
-  vector<float> *eta_jets	= new vector<float>;
-  vector<float> *phi_jets	= new vector<float>;
+  vector<float> *pt_jets = new vector<float>;
+  vector<float> *eta_jets = new vector<float>;
+  vector<float> *phi_jets = new vector<float>;
   vector<bool> *mvaIdMedium_jets = new vector<bool>;
+  vector<float> *CSVBT_jets	= new vector<float>;
+  vector<float> *CSVMVA_jets = new vector<float>;
   for(int unsigned ij=0;ij<Jets.size();ij++) { 
 	  Candidate* jet = Jets[ij];
 	  if( jet->pt() > 30 ) {
@@ -186,12 +189,18 @@ ToyAnalysis::analyzeEvent()
 		  CandInfo* info = jet->info();
 		  bool mvaIdMedium = info->getBool("mvaIdMedium");
 		  mvaIdMedium_jets->push_back(mvaIdMedium);
+		  float CSVBT = info->getFloat("btagCSVBT");
+		  float CSVMVA = info->getFloat("btagCSVMVA");
+		  CSVBT_jets->push_back(CSVBT);
+		  CSVMVA_jets->push_back(CSVMVA);
 	  }
   }
   tm.add<vector<float>*>("pt_jets", &pt_jets);
   tm.add<vector<float>*>("eta_jets", &eta_jets);
   tm.add<vector<float>*>("phi_jets", &phi_jets);
   tm.add<vector<bool>*>("mvaIdMedium_jets", &mvaIdMedium_jets);
+  tm.add<vector<float>*>("CSVBT_jets", &CSVBT_jets);
+  tm.add<vector<float>*>("CSVMVA_jets", &CSVMVA_jets);
 
   //for(int unsigned ij=0;ij<Jets.size();ij++) { 
   //  Candidate* jet = Jets[ij];
@@ -204,8 +213,24 @@ ToyAnalysis::analyzeEvent()
   //}
 
   // Retrieve met candidates.
-  //Candidate* met_  = _e.met( EventManager::kPfMet);
- 
+  //PATType1CorrectedPFMet
+  //MVAPFMet
+  //MVANoPUMET
+  const Candidate* pfmet = _e.met( "pat", "patType1CorrectedPFMet" );
+  const Candidate* pfmetMva = _e.met( "pat", "patPFMetMVA" );
+  const Candidate* pfmetNoPu = _e.met( "pat", "patPFMetNoPileUp" );
+  // MET variables to store.
+  float pt_met, phi_met, sig_met;
+  pt_met = phi_met = sig_met = 0;
+  {
+	  CandInfo* info = pfmet->info();
+	  pt_met = pfmet->pt();
+	  phi_met = pfmet->phi();
+	  sig_met = info->getFloat("mEtSig");
+  }
+  tm.add<float>("pt_met", &pt_met);
+  tm.add<float>("phi_met", &phi_met);
+  tm.add<float>("sig_met", &sig_met);
 
   // stat histograms
   //fillStatHistograms();
